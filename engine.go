@@ -40,7 +40,7 @@ type EngineOptions struct {
 // Engine is the entry point to the IB IB API
 type Engine struct {
 	id               chan int64
-	exit             chan bool
+	exit             chan struct{}
 	terminated       chan struct{}
 	ch               chan command
 	gateway          string
@@ -114,7 +114,7 @@ func NewEngine(opt EngineOptions) (*Engine, error) {
 
 	e := Engine{
 		id:               uniqueID(100),
-		exit:             make(chan bool),
+		exit:             make(chan struct{}),
 		terminated:       make(chan struct{}),
 		ch:               make(chan command),
 		gateway:          gateway,
@@ -527,7 +527,7 @@ func (e *Engine) Stop() {
 	select {
 	case <-e.terminated:
 		return
-	case e.exit <- true:
+	case e.exit <- struct{}{}:
 	}
 
 	<-e.terminated
