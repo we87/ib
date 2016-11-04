@@ -27,3 +27,5 @@ go.trade
 .build_id
 .build_gw_id
 .gateway_id
+
+.vscode

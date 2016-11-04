@@ -133,6 +133,8 @@ func NewEngine(opt EngineOptions) (*Engine, error) {
 	}
 
 	if err := e.handshake(); err != nil {
+		// avoid connection leak
+		conn.Close()
 		return nil, err
 	}
 
@@ -273,10 +275,12 @@ func (e *Engine) startMainLoop() {
 func (e *Engine) deliverToObservers(r Reply) {
 	if r.code() == mErrorMessage {
 		var done []chan<- Reply
+
+	OUTER_LOOP:
 		for _, o := range e.observers {
 			for _, prevDone := range done {
 				if o == prevDone {
-					continue
+					continue OUTER_LOOP
 				}
 			}
 			done = append(done, o)
